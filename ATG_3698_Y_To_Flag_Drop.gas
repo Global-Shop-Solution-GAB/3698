@@ -1,0 +1,44 @@
+Program.Sub.ScreenSU.Start
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'7/28/10 by SMC for customer Simpson
+'Changes FLAG_DROP field to Y for all parts with the selected location in SS > Company Options(Advanced) > Manufacturing Tables > Location
+'Hooks 35401 (Populate) and 35402 (Script 1)
+
+F.Intrinsic.Control.If(V.Caller.Hook,=,35401)
+	V.Passed.000006.Set("Flag Drop")
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.If(V.Passed.000002,=,"")
+		F.Intrinsic.UI.Msgbox("Select a location")
+	F.Intrinsic.Control.Else
+		V.Local.sQuery.Declare(String)
+		V.Local.sRet.Declare(String)
+
+		F.Intrinsic.String.Concat("Are you sure you want to flag all parts with location ",V.Passed.000002," as drop material?",V.Local.sQuery)
+		F.Intrinsic.UI.Msgbox(V.Local.sQuery,"Flag as Drop Material",4,V.Local.sRet)
+		F.Intrinsic.Control.If(V.Local.sRet,=,6)
+			F.ODBC.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+
+			F.Intrinsic.String.Concat("UPDATE INVENTORY_MSTR SET FLAG_DROP='Y' WHERE LOCATION='",V.Passed.000002,"'",V.Local.sQuery)
+			F.ODBC.Connection!conx.Execute(V.Local.sQuery)
+
+			F.odbc.connection!conx.close
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$0$}$ATG_3698_Y_To_Flag_Drop$}$JCT$}$4/5/2016
+${$1$}$$}$$}$1$}$35402$}$Script-1$}$4/5/2016 4:46:24 PM$}$(Program: MFGTBL; Screen: MFGSLOC)
+
+${$1$}$$}$$}$0$}$35401$}$Populate$}$4/5/2016 4:45:55 PM$}$(Program: MFGTBL; Screen: MFGSLOC)
+
+Program.Sub.Comments.End
+
